@@ -1,15 +1,14 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const { connectdb } = require("./connectdb.js");
 const { config } = require("dotenv");
-const { createCustomer } = require("./customerController.js");
+const { createCustomer, getUsers } = require("./customerController.js");
 const app = express();
 
 //env configuration
 config({ path: "./config.env" });
 
 //middlewares
-app.use(bodyParser.json());
+app.use(express.json());
 
 //routes
 
@@ -18,6 +17,7 @@ app.get("/", (req, res) => {
   res.send("hello server");
 });
 app.post("/createcustomer", createCustomer);
+app.get("/all", getUsers);
 
 //const db varaiables
 const myHost = process.env.DB_HOST;

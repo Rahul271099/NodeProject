@@ -17,6 +17,7 @@ const validateInput = (data) => {
   }
   return null;
 };
+
 const createCustomer = (req, res) => {
   const { firstName, lastName, email, mobileNumber, address, pincode } =
     req.body;
@@ -30,12 +31,13 @@ const createCustomer = (req, res) => {
     });
   }
 
-  const query = `CALL InsertCustomer(?, ?, ?, ?, ?, ?, @status, @message);`;
+  const query = `CALL InsertCustomer(?, ?, ?, ?, ?, ?)`;
 
   db.query(
     query,
     [firstName, lastName, email, mobileNumber, address, pincode],
     (err, results) => {
+      console.log(results);
       if (err) {
         return res.status(400).json({
           success: false,
@@ -44,27 +46,33 @@ const createCustomer = (req, res) => {
         });
       }
 
-      // Fetch the output parameters
-      db.query(
-        "SELECT @status AS status, @message AS message",
-        (err, results) => {
-          if (err) {
-            return res.status(500).json({
-              success: false,
-              message: "Database error",
-              error: err.message,
-            });
-          }
-          const status = results[0].status;
-          const message = results[0].message;
-          if (status === 0) {
-            return res.status(400).json({ success: false, message });
-          }
-          res.status(200).json({ success: true, message });
-        }
-      );
+      const status = results[0][0].status;
+      const message = results[0][0].message;
+
+      console.log(status);
+      if (status === 0) {
+        return res.status(400).json({ success: false, message });
+      }
+
+      res.status(200).json({ success: true, message });
     }
   );
 };
 
-module.exports = { createCustomer };
+const getUsers = (req, res) => {
+  db.query(`select * from customerDetails;`, (err, results) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: "Database Error",
+        error: err.message,
+      });
+    }
+    res.status(200).json({
+      success: true,
+      myData: results,
+    });
+  });
+};
+
+module.exports = { createCustomer, getUsers };
